@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
-'''理想状态下的多臂老虎机问题解决方法'''
+'''
+BernoulliBandit类：包含实例中每个老虎机的中奖概率和一些相关信息，其中的step方法用来判断是否中奖
+'''
 
 
 class BernouliBandit:
@@ -19,8 +21,13 @@ class BernouliBandit:
 
 np.random.seed(1)
 K = 10
-bandit_10_arms = BernouliBandit(K)
-print("%d,%.4f" % (bandit_10_arms.best_idx, bandit_10_arms.best_prob))
+bandit_10_arms = BernouliBandit(K)  # 将BernoulliBandit类实例化
+# print("%d,%.4f" % (bandit_10_arms.best_idx, bandit_10_arms.best_prob))
+
+'''
+solver类记录了在反复尝试过程中的每一步动作以及这些动作带来的regret，以及regret的积累
+存在一个问题：NotImplementedError在这里是怎么工作的，不太懂，似乎是在solver中留一个占位符，等着被子类中的同名函数重载？
+'''
 
 
 class Solver:
@@ -44,6 +51,9 @@ class Solver:
             self.counts[k] += 1
             self.action.append(k)
             self.update_regret(k)
+
+
+'''epsilon—greedy,solver的子类，这里的run_one_step实现了epsilon的随机挑选'''
 
 
 class EpsilonGreedy(Solver):
@@ -77,6 +87,7 @@ np.random.seed(1)
 epsilon_greedy_solver = EpsilonGreedy(bandit_10_arms, epsilon=0.01)
 epsilon_greedy_solver.run(5000)
 print(epsilon_greedy_solver.regret)
+print(epsilon_greedy_solver.counts)
 plot_results([epsilon_greedy_solver], ["epsilon greedy"])
 
 np.random.seed(0)
