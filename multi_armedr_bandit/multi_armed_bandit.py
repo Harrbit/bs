@@ -124,3 +124,25 @@ UCB_solver = UCB(bandit_10_arms, coef)
 UCB_solver.run(5000)
 print("UCB积累悔恨为：", UCB_solver.regret)
 plot_results([UCB_solver], ["UCB"])
+
+
+class ThompsonSampling(Solver):
+    def __init__(self, bandit):
+        super(ThompsonSampling, self).__init__(bandit)
+        self._a = np.ones(self.bandit.K)
+        self._b = np.ones(self.bandit.K)
+
+    def run_one_step(self):
+        samples = np.random.beta(self._a, self._b)
+        k = np.argmax(samples)
+        r = self.bandit.step(k)
+        self._a[k] += r
+        self._b[k] += 1-r
+        return k
+
+
+np.random.seed(1)
+thompson_sampling_solver = ThompsonSampling(bandit_10_arms)
+thompson_sampling_solver.run(5000)
+print('thompson sampling',thompson_sampling_solver.regret)
+plot_results([thompson_sampling_solver], ["thompson sampling"])
