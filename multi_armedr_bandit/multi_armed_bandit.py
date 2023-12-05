@@ -68,7 +68,7 @@ class EpsilonGreedy(Solver):
         else:
             k = np.argmax(self.estimates)
         r = self.bandit.step(k)
-        self.estimates[k] += 1./(self.counts[k] + 1) * (r - self.estimates[k])
+        self.estimates[k] += 1./(self.counts[k] + 1) * (r - self.estimates[k])  # 增量式更新期望，公式在书上第9页
         return k
 
 
@@ -100,3 +100,27 @@ epsilon_greedy_solver_names = ["epsilon = {}".format(e) for e in epsilons]
 for solver in epsilon_greedy_solver_list:
     solver.run(5000)
 plot_results(epsilon_greedy_solver_list, epsilon_greedy_solver_names)
+
+
+class UCB(Solver):
+    def __init__(self, bandit, coef, init_prob=1.0):
+        super(UCB, self).__init__(bandit)
+        self.total_count = 0
+        self.estimates = np.array([init_prob]*self.bandit.K)
+        self.coef = coef
+
+    def run_one_step(self):
+        self.total_count += 1
+        ucb = self.estimates + self.coef * np.sqrt(np.log(self.total_count) / (2 * (self.counts + 1)))  # 计算上置信界，p15
+        k = np.argmax(ucb)
+        r = self.bandit.step(k)
+        self.estimates[k] += 1./(self.counts[k] + 1) * (r - self.estimates[k])
+        return k
+
+
+np.random.seed(1)
+coef = 1
+UCB_solver = UCB(bandit_10_arms, coef)
+UCB_solver.run(5000)
+print("UCB积累悔恨为：", UCB_solver.regret)
+plot_results([UCB_solver], ["UCB"])
