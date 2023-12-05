@@ -5,9 +5,9 @@ BernoulliBandit类：包含实例中每个老虎机的中奖概率和一些相�
 '''
 
 
-class BernouliBandit:
+class BernoulliBandit:
     def __init__(self, K):
-        self.probs = np.random.uniform(size=K)
+        self.probs = np.random.uniform(size=K)  # 这里给出了所有老虎机的中奖概率
         self.best_idx = np.argmax(self.probs)
         self.best_prob = self.probs[self.best_idx]
         self.K = K
@@ -21,7 +21,7 @@ class BernouliBandit:
 
 np.random.seed(1)
 K = 10
-bandit_10_arms = BernouliBandit(K)  # 将BernoulliBandit类实例化
+bandit_10_arms = BernoulliBandit(K)  # 将BernoulliBandit类实例化
 # print("%d,%.4f" % (bandit_10_arms.best_idx, bandit_10_arms.best_prob))
 
 '''
@@ -72,6 +72,9 @@ class EpsilonGreedy(Solver):
         return k
 
 
+'''画图函数，没什么说的'''
+
+
 def plot_results(solvers, solver_names):
     for idx, solver in enumerate(solvers):
         time_list = range(len(solver.regrets))
@@ -87,9 +90,9 @@ np.random.seed(1)
 epsilon_greedy_solver = EpsilonGreedy(bandit_10_arms, epsilon=0.01)
 epsilon_greedy_solver.run(5000)
 print(epsilon_greedy_solver.regret)
-print(epsilon_greedy_solver.counts)
 plot_results([epsilon_greedy_solver], ["epsilon greedy"])
 
+# 展示不同epsilon下的regret
 np.random.seed(0)
 epsilons = [1e-4, 0.01, 0.1, 0.25, 0.5]
 epsilon_greedy_solver_list = [EpsilonGreedy(bandit_10_arms, epsilon=e) for e in epsilons]
