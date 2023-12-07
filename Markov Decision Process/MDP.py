@@ -12,6 +12,7 @@ P = np.array(P)
 
 rewards = [-1, -2, -2, 10, 1, 0]
 gamma = 0.5
+'''MRP first, will get to MDP later'''
 
 
 def compute_return(start_index, chain, gamma):
@@ -35,3 +36,108 @@ def compute(P, rewards, gamma, states_num):
 
 V = compute(P, rewards, gamma, 6)
 print("MRP中每个状态价值分别为\n", V)
+
+S = ["s1", "s2", "s3", "s4", "s5"]
+A = ["保持s1", "前往s1", "前往s2", "前往s3", "前往s4", "前往s5", "概率前往"]
+P = {
+    "s1-保持s1-s1": 1.0, "s1-前往s2-s2": 1.0,
+    "s2-前往s1-s1": 1.0, "s2-前往s3-s3": 1.0,
+    "s3-前往s4-s4": 1.0, "s3-前往s5-s5": 1.0,
+    "s4-前往s5-s5": 1.0, "s4-概率前往s2": 0.2,
+    "s4-概率前往s3": 0.4, "s4-概率前往s4": 0.4,
+}
+R = {
+    "s1-保持s1": -1, "s1-前往s2": 0,
+    "s2-前往s1": -1, "s2-前往s3": -2,
+    "s3-前往s4": -2, "s3-前往s5": 0,
+    "s4-前往s5": 10, "s4-概率前往": 1,
+}
+gamma = 0.5
+MDP = (S, A, P, R, gamma)
+
+Pi_1 = {
+    "s1-保持s1": 0.5, "s1-前往s2": 0.5,
+    "s2-前往s1": 0.5, "s2-前往s3": 0.5,
+    "s3-前往s4": 0.5, "s3-前往s5": 0.5,
+    "s4-前往s5": 0.5, "s4-概率前往": 0.5,
+}
+
+Pi_2 = {
+    "s1-保持s1": 0.6, "s1-前往s2": 0.4,
+    "s2-前往s1": 0.3, "s2-前往s3": 0.7,
+    "s3-前往s4": 0.5, "s3-前往s5": 0.5,
+    "s4-前往s5": 0.1, "s4-概率前往": 0.9,
+}
+
+
+def join(str1, str2):
+    return str1 + '-' + str2
+
+
+gamma = 0.5
+P_from_mdp_to_mrp = [
+    [0.5, 0.5, 0.0, 0.0, 0.0],
+    [0.5, 0.0, 0.5, 0.0, 0.0],
+    [0.0, 0.0, 0.0, 0.5, 0.5],
+    [0.0, 0.1, 0.2, 0.2, 0.5],
+    [0.0, 0.0, 0.0, 0.0, 0.1],
+]
+P_from_mdp_to_mrp = np.array(P_from_mdp_to_mrp)
+R_from_mdp_to_mrp = [-0.5, -1.5, -1.0, 5.5, 0.0]
+
+V = compute(P_from_mdp_to_mrp, R_from_mdp_to_mrp, gamma, 5)
+print("MDP中的每个状态价值分别为\n", V)
+
+
+def sample(MDP, Pi, timestep_max, number):
+    S, A, R, P, gamma = MDP
+    episodes = []
+    for _ in range(number):
+        episode = []
+        timestep = 0
+        s = S[np.random.randint(4)]  # 选择初始点
+        while s != "s5" and timestep <= timestep_max:
+            timestep += 1
+            rand, temp = np.random.rand(), 0
+            for a_opt in A:
+                temp += Pi.get(join(s, a_opt), 0)
+                if temp > rand:
+                    a = a_opt
+                    r = R.get(join(s, a), 0)
+                    break
+            rand, temp = np.random.rand(), 0
+            for s_opt in S:
+                temp += P.get(join(join(s, a), s_opt), 0)
+                if temp > rand:
+                    s_next = s_opt
+                    break
+            episode.append((s, a, r, s_next))
+            s = s_next
+        episodes.append(episode)
+    return episodes
+
+
+episodes = sample(MDP, Pi_1, 20, 5)
+print("first sequence", episodes[0])
+print("second sequence", episodes[1])
+print("fifth sequence", episodes[4])
+
+
+def MC(episodes, V, N, gamma):
+    for episode in episodes:
+        G = 0
+        for i in range(len(episode)-1 -1 -1):
+            (s, a, r, s_next) = episode[i]
+            g = r + gamma * G
+            N[s] = N[s] + 1
+            V[s] = V[s] + (G - V[s])/N[s]
+
+
+timestep_max = 20
+episodes = sample(MDP, Pi_1, timestep_max, 1000)
+gamma = 0.5
+V = {"s1": 0, "s2": 0, "s3": 0, "s4": 0, "s5": 0}
+N = {"s1": 0, "s2": 0, "s3": 0, "s4": 0, "s5": 0}
+MC(episodes, V, N, gamma)
+print("使用蒙特卡洛方法计算MDP状态价值为\n", V)
+
