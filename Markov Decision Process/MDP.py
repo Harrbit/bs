@@ -43,8 +43,8 @@ P = {
     "s1-保持s1-s1": 1.0, "s1-前往s2-s2": 1.0,
     "s2-前往s1-s1": 1.0, "s2-前往s3-s3": 1.0,
     "s3-前往s4-s4": 1.0, "s3-前往s5-s5": 1.0,
-    "s4-前往s5-s5": 1.0, "s4-概率前往s2": 0.2,
-    "s4-概率前往s3": 0.4, "s4-概率前往s4": 0.4,
+    "s4-前往s5-s5": 1.0, "s4-概率前往-s2": 0.2,
+    "s4-概率前往-s3": 0.4, "s4-概率前往-s4": 0.4,
 }
 R = {
     "s1-保持s1": -1, "s1-前往s2": 0,
@@ -71,7 +71,7 @@ Pi_2 = {
 
 
 def join(str1, str2):
-    return str1 + '-' + str2
+    return str1 + "-" + str2
 
 
 gamma = 0.5
@@ -90,7 +90,7 @@ print("MDP中的每个状态价值分别为\n", V)
 
 
 def sample(MDP, Pi, timestep_max, number):
-    S, A, R, P, gamma = MDP
+    S, A, P, R, gamma = MDP
     episodes = []
     for _ in range(number):
         episode = []
@@ -105,9 +105,10 @@ def sample(MDP, Pi, timestep_max, number):
                     a = a_opt
                     r = R.get(join(s, a), 0)
                     break
-            rand, temp = np.random.rand(), 0
+            rand, temp = np.random.rand(), 0.0
             for s_opt in S:
-                temp += P.get(join(join(s, a), s_opt), 0)
+                test = join(join(s, a), s_opt)
+                temp += P.get(test, 0)
                 if temp > rand:
                     s_next = s_opt
                     break
