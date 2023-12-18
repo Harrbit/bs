@@ -104,15 +104,15 @@ def print_agent(agent, action_meaning, disaster = [], end = []):
                 print(pi_str, end=' ')
             print()
 
-'''
+
 env = CliffWalkingEnv()
-action_meaning = ['^', 'v', '<', '>']
+action_meaning = ['∧', '∨', '<', '>']
 theta = 0.001
 gamma = 0.9
 agent = PolicyIteration(env, theta, gamma)
 agent.policy_iteration()
 print_agent(agent, action_meaning, list(range(37, 47)), [47])
-'''
+
 
 class ValueIteration:
     def __init__(self, env, theta, gamma):
