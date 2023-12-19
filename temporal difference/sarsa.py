@@ -70,7 +70,7 @@ return_list = []
 
 
 for i in range(10):
-    with tqdm(total = int(num_episodes/10), desc = 'Iteration %d' % i) as pbar:
+    with tqdm(total=int(num_episodes/10), desc='Iteration %d' % i) as pbar:
         for i_episode in range(int(num_episodes/10)):
             episode_return = 0
             state = env.reset()

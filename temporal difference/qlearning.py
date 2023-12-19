@@ -56,6 +56,7 @@ class QLearning:
         td_error = r + self.gamma * self.Q_table[s1].max() - self.Q_table[s0, a0]
         self.Q_table[s0, a0] += self.alpha *td_error
 
+
 def print_agent(agent, env, action_meaning, disaster=[], end=[]):
     for i in range(env.nrow):
         for j in range(env.ncol):
