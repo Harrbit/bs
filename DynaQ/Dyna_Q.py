@@ -47,6 +47,7 @@ class DynaQ:
             action = np.random.randint(self.n_action)
         else:
             action = np.argmax(self.Q_table[state])
+        return action
 
     def q_learning(self, s0, a0, r, s1):
         td_error = r + self.gamma * self.Q_table[s1].max() - self.Q_table[s0, a0]
@@ -72,7 +73,7 @@ def DynaQ_CliffWalking(n_planning):
 
     return_list = []
     for i in range(10):
-        with tqdm(total=int(num_episodes/10), desc='Iteration%d'%i) as pbar:
+        with tqdm(total=int(num_episodes/10), desc='Iteration%d' % i) as pbar:
             for i_episode in range(int(num_episodes/10)):
                 episode_return = 0
                 state = env.reset()
