@@ -39,7 +39,7 @@ class Sarsa:
 
     def take_action(self, state):
         if np.random.random() < self.epsilon:
-            action = np.argmax(self.Q_tabel[state])
+            action = np.random.randint(self.n_action)
         else:
             action = np.argmax(self.Q_tabel[state])
         return action
