@@ -85,8 +85,9 @@ def DynaQ_CliffWalking(n_planning):
                     agent.update(state, action, reward, next_state)
                     state = next_state
                 return_list.append(episode_return)
-                if(i_episode+1)%10==0:
-                    pbar.set_postfix({'episode':'%d'%(num_episodes/10 * i+i_episode+1),'return':'%.3f'%np.mean(return_list[-10:])})
+                if(i_episode+1) % 10 == 0:
+                    pbar.set_postfix({'episode': '%d' % (num_episodes/10 * i+i_episode+1),
+                                      'return': '%.3f' % np.mean(return_list[-10:])})
                 pbar.update(1)
     return return_list
 
