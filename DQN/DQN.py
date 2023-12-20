@@ -8,6 +8,7 @@ import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import rl_utils
 
+
 class ReplayBuffer:
     ''' 经验回放池 '''
     def __init__(self, capacity):
@@ -35,6 +36,8 @@ class Qnet(torch.nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))  # 隐藏层使用ReLU激活函数
         return self.fc2(x)
+
+
 class DQN:
     ''' DQN算法 '''
     def __init__(self, state_dim, hidden_dim, action_dim, learning_rate, gamma,
@@ -89,6 +92,8 @@ class DQN:
             self.target_q_net.load_state_dict(
                 self.q_net.state_dict())  # 更新目标网络
         self.count += 1
+
+
 lr = 2e-3
 num_episodes = 500
 hidden_dim = 128
