@@ -91,12 +91,8 @@ for i in range(10):
             pbar.update(1)
 
 episodes_list = list(range(len(return_list)))
-plt.plot(episodes_list, return_list)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('REINFORCE on {}'. format(env_name))
-plt.show()
 
+'''smoothen for better image'''
 mv_return = rl_utils.moving_average(return_list, 9)
 plt.plot(episodes_list, mv_return)
 plt.xlabel('Episodes')
