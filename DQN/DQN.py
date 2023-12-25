@@ -95,7 +95,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 500
+num_episodes = 2000
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -106,7 +106,7 @@ batch_size = 64
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
     "cpu")
 
-env_name = 'CartPole-v0'
+env_name = 'MountainCar-v0'
 env = gym.make(env_name)
 random.seed(0)
 np.random.seed(0)
