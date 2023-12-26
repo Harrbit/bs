@@ -1,11 +1,16 @@
+# 分成四步：（1）导入数据，（2）数据预处理， （3）训练， （4）测试
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
 import torchvision
+import torch.nn.functional as F
+import numpy as np
+from torchinfo import summary
+import matplotlib.pyplot as plt
+import warnings
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-print(device)
+# print(device)
 
 train_ds = torchvision.datasets.MNIST('data',
                                       train=True,
@@ -30,12 +35,12 @@ test_dl = torch.utils.data.DataLoader(test_ds,
 # 数据的shape为：[batch_size, channel, height, weight]
 # 其中batch_size为自己设定，channel，height和weight分别是图片的通道数，高度和宽度。
 imgs, labels = next(iter(train_dl))
-print(imgs.shape)
+# print(imgs.shape)
 
-import numpy as np
+
 
 # 指定图片大小，图像大小为20宽、5高的绘图(单位为英寸inch)
-plt.figure(figsize=(20, 5))
+'''plt.figure(figsize=(20, 5))
 for i, imgs in enumerate(imgs[:20]):
     # 维度缩减
     npimg = np.squeeze(imgs.numpy())
@@ -47,9 +52,7 @@ for i, imgs in enumerate(imgs[:20]):
     plt.subplot(2, 10, i + 1)
     plt.imshow(npimg, cmap=plt.cm.binary)
     plt.axis('off')
-plt.show()
-
-import torch.nn.functional as F
+plt.show()'''
 
 num_classes = 10  # 图片的类别数
 
@@ -80,16 +83,14 @@ class Model(nn.Module):
         return x
 
 
-from torchinfo import summary
-
 # 将模型转移到GPU中（我们模型运行均在GPU中进行）
 model = Model().to(device)
 
-# summary(model)
+summary(model)
 
 loss_fn = nn.CrossEntropyLoss()  # 创建损失函数
 learn_rate = 1e-2  # 学习率
-opt = torch.optim.SGD(model.parameters(), lr=learn_rate)
+opt = torch.optim.SGD(model.parameters(), lr=learn_rate)  # 优化器
 
 
 # 训练循环
@@ -144,7 +145,7 @@ def test(dataloader, model, loss_fn):
     return test_acc, test_loss
 
 
-epochs = 10  # 代表训练x轮，自己可以设
+epochs = 10  # 代表训练x轮
 train_loss = []
 train_acc = []
 test_loss = []
@@ -166,9 +167,7 @@ for epoch in range(epochs):
     print(template.format(epoch + 1, epoch_train_acc * 100, epoch_train_loss, epoch_test_acc * 100, epoch_test_loss))
 print('Done')
 
-import matplotlib.pyplot as plt
-#隐藏警告
-import warnings
+
 warnings.filterwarnings("ignore")               #忽略警告信息
 plt.rcParams['font.sans-serif']    = ['SimHei'] # 用来正常显示中文标签
 plt.rcParams['axes.unicode_minus'] = False      # 用来正常显示负号
