@@ -35,7 +35,7 @@ test_dl = torch.utils.data.DataLoader(test_ds,
 # 数据的shape为：[batch_size, channel, height, weight]
 # 其中batch_size为自己设定，channel，height和weight分别是图片的通道数，高度和宽度。
 imgs, labels = next(iter(train_dl))
-# print(imgs.shape)
+print(imgs.shape)
 
 
 
@@ -55,6 +55,20 @@ for i, imgs in enumerate(imgs[:20]):
 plt.show()'''
 
 num_classes = 10  # 图片的类别数
+hidden_dim = 128
+state_dim = batch_size*28*28
+action_dim = num_classes
+
+
+'''class Model(nn.Module):
+    def __init__(self, state_dim, hidden_dim, action_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(state_dim, hidden_dim)
+        self.fc2 = nn.Linear(hidden_dim, action_dim)
+
+    def forward(self, x):
+        x = F.relu(self.fc1(x))
+        return self.fc2(x)'''
 
 
 class Model(nn.Module):

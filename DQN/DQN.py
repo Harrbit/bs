@@ -7,6 +7,7 @@ import torch
 import torch.nn.functional as F
 import matplotlib.pyplot as plt
 import rl_utils
+from torchinfo import summary
 
 
 class ReplayBuffer:
@@ -95,7 +96,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 2000
+num_episodes = 500
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -106,7 +107,7 @@ batch_size = 64
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
     "cpu")
 
-env_name = 'MountainCar-v0'
+env_name = 'CartPole-v0'
 env = gym.make(env_name)
 random.seed(0)
 np.random.seed(0)
@@ -117,7 +118,7 @@ state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.n
 agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon,
             target_update, device)
-
+summary(agent.q_net)
 
 return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
 

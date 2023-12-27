@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
+import rl_utils
 
 
 class CliffWalkingEnv:
@@ -102,7 +103,9 @@ for i in range(10):
                 pbar.set_postfix({'episode': '%d' % (num_episodes/10 * i + i_episode+1), 'return': '%0.3f' % np.mean(return_list[-10:])})
             pbar.update(1)
 episodes_list = list(range(len(return_list)))
-plt.plot(episodes_list, return_list)
+mv_return = rl_utils.moving_average(return_list, 9)
+plt.plot(episodes_list, mv_return)
+# plt.plot(episodes_list, return_list)
 plt.xlabel('Episodes')
 plt.ylabel('Returns')
 plt.title('Q-learning on {}'.format('Cliff Walking'))
