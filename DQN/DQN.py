@@ -96,7 +96,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 500
+num_episodes = 1000
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -121,6 +121,12 @@ agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon,
 summary(agent.q_net)
 
 return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
+
+for _ in range(1000):
+    env.render()
+    env.step(agent.q_net(env.state).argmax.item)
+env.close()
+
 
 episodes_list = list(range(len(return_list)))
 plt.plot(episodes_list, return_list)

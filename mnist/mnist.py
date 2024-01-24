@@ -159,7 +159,7 @@ def test(dataloader, model, loss_fn):
     return test_acc, test_loss
 
 
-epochs = 2  # 代表训练x轮
+epochs = 50  # 代表训练x轮
 train_loss = []
 train_acc = []
 test_loss = []
