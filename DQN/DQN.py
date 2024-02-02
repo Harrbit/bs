@@ -96,7 +96,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 1000
+num_episodes = 100
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -122,9 +122,9 @@ summary(agent.q_net)
 
 return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
 
-for _ in range(1000):
+for _ in range(10000):
     env.render()
-    env.step(agent.q_net(env.state).argmax.item)
+    env.step(agent.q_net(env.state).argmax().item())
 env.close()
 
 
