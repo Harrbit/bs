@@ -5,7 +5,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 
 batch_size = 64
-epoch = 5
+epoch = 1
 pipeline = torchvision.transforms.Compose([torchvision.transforms.ToTensor(), 
                                           torchvision.transforms.Normalize(mean = (0.1307,), std = (0.3081,))])
 
@@ -81,19 +81,23 @@ def train(model, device, train_dl, optimizer):
 def test(test_dl, model, loss_fn):
     test_loss, test_acc = 0, 0
     for data, target in test_dl:
+        data, target = data.to(device), target.to(device)
         output = model(data)
         loss = loss_fn(output, target)
 
         test_loss += loss
-        test_acc += (output.argmax(1) == target).type(torch.float).sum.item
-    test_loss /= len(test_dl.dataset)
-    test_acc /= len(test_dl.item())
+        test_acc += (output.argmax(1) == target).type(torch.float).sum().item()
+    test_loss /= len(test_dl)
+    test_acc /= len(test_dl.dataset)
+    print("test{:.3}, {:.3}".format(test_acc, test_loss))
     return test_loss, test_acc
 
 def implementation(train_dl, test_dl, epoch, model):
     for i in range(epoch):
         model.train()
         epoch_train_loss, epoch_train_acc = train(model, device, train_dl, optimizer)
-        print(epoch_train_acc, epoch_train_loss)
+        print("train{:.3}, {:.3}".format(epoch_train_acc, epoch_train_loss))
+    test(test_dl, model, loss_fn)
+
 
 implementation(train_dl, test_dl, epoch, model)
