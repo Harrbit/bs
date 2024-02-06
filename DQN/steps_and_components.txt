@@ -1,0 +1,63 @@
+component1.经验回放池{
+    初始化（大小）
+    {
+        初始化为一个collection.deque，在此叫buffer
+    }
+    增加条目（状态，动作，回报，下个状态，done）
+    {   
+        在buffer上append由状态，动作，回报，下个状态，done构成的元组（用圆括号括起来）
+    }
+    采样（采样数量）
+    {
+        用random.sample函数从buffer中抽取数据
+        用zip函数整理数据
+        返回：状态（矩阵格式），动作，回报，下个状态（矩阵格式），done
+    }
+    大小
+    {
+        返回：buffer大小（用len函数）
+    }
+}
+
+component2.神经网络（继承torch.nn.Module）
+{
+    初始化（状态维数，隐藏维数，动作维数）：
+    {
+        用super函数继承父类的初始化
+        搞两个全连接层就行
+    }
+    前向传播（状态）
+    {
+        用relu函数激活第一个全连接层的输出，具体方法为：torch.nn.functional.relu(fc(x))
+        返回：第二个线性全连接层的输出
+    }
+}
+
+component3.DQN  #  这个对象定义了DQN方法中智能体的行为，比如如何采取行动，如何更新网络
+{
+    初始化（状态维数，隐藏维数，动作维数，学习率，折扣因子，epsilon（ε-greedy算法的那个），
+    网络更新频率，device）
+    {
+        把接下来需要用到的对象放进来（优化器，目标网络，训练网络等）
+    }
+    采取动作（状态）
+    {
+        根据ε-greedy算法，一定概率按照已有策略行动（
+        将状态修改类型后推入device，再用状态决定行动）
+        state = torch.tensor([state],dtype = torch.float).to(self.device)
+        action = self.q_net(state)
+    }
+    更新（transition_dictionary）
+    {
+        首先将各个变量的格式改成正确的
+        通过q_net获得q值
+        通过target_q_net获得下一个最大q值
+        计算TD误差目标
+        计算损失值
+        将损失值反向传播
+        优化器step
+
+        按照target update频率更新目标网络
+    }
+}
+

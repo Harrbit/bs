@@ -1,3 +1,4 @@
+import pickle
 import random
 import gym
 import numpy as np
@@ -94,7 +95,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 100
+num_episodes = 150
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -102,10 +103,8 @@ target_update = 10
 buffer_size = 10000
 minimal_size = 500
 batch_size = 64
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
-    "cpu")
-
-env_name = 'CartPole-v0'
+device = torch.device("cuda")
+env_name = 'CartPole-v1'
 env = gym.make(env_name)
 random.seed(0)
 np.random.seed(0)
@@ -118,15 +117,15 @@ agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon,
             target_update, device)
 summary(agent.q_net)
 
-return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, replay_buffer, minimal_size, batch_size)
+return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, 
+                                              replay_buffer, minimal_size, batch_size)
 
-for _ in range(10000):
-    env.render()
-    env.step(agent.q_net(env.state).argmax().item())
-env.close()
+print(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
 
 
-episodes_list = list(range(len(return_list)))
+
+
+'''episodes_list = list(range(len(return_list)))
 plt.plot(episodes_list, return_list)
 plt.xlabel('Episodes')
 plt.ylabel('Returns')
@@ -138,4 +137,12 @@ plt.plot(episodes_list, mv_return)
 plt.xlabel('Episodes')
 plt.ylabel('Returns')
 plt.title('DQN on {}'.format(env_name))
-plt.show()
+plt.show()'''
+
+with open('DQN_CartPole1.pkl', 'wb') as TrainedModel:
+    pickle.dump(agent, TrainedModel)
+
+for _ in range(10000):
+    env.render()
+    env.step(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
+env.close()

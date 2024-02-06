@@ -17,10 +17,13 @@ class DQN:
                  gamma, epsilon, target_update, device):
         self.action_dim = action_dim
         self.q_net = QNET(state_dim, hidden_dim, action_dim).to(device)
-        self.target__net = QNET(state_dim, hidden_dim, action_dim).to(device)
+        self.target_q_net = QNET(state_dim, hidden_dim, action_dim).to(device)
         self.optimizer = torch.optim.Adam(self.q_net.parameters(), lr = learning_rate)
         self.epsilon = epsilon
         self.device = device
+        self.gamma = gamma
+        self.target_update = target_update
+        self.count = 0
 
     def take_action(self, state):
         if np.random() < self.epsilon:
@@ -44,4 +47,11 @@ class DQN:
         
         q_values = self.q_net(states).gather(1,actions)
         max_next_q_values = self.target__net(next_state).max([1])[0].view(-1,1)
-        
+        q_targets = rewards + self.gamma * max_next_q_values * (1 - dones)
+        dqn_loss = torch.mean(F.mse_loss(q_values, q_targets))
+        self.optimizer.zero_grad()
+        dqn_loss.backward()
+        self.optimizer.step()
+        if self.count % self.target_update == 0:
+            self.target_q_net.load_state_dict(self.q_net.state_dict())
+        self.count += 1
