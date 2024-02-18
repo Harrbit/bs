@@ -95,7 +95,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 150
+num_episodes = 500
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -104,12 +104,15 @@ buffer_size = 10000
 minimal_size = 500
 batch_size = 64
 device = torch.device("cuda")
-env_name = 'CartPole-v1'
+env_name = 'CartPole-v0'
+
 env = gym.make(env_name)
+env.reset()
 random.seed(0)
 np.random.seed(0)
 env.seed(0)
 torch.manual_seed(0)
+
 replay_buffer = ReplayBuffer(buffer_size)
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.n
@@ -139,7 +142,7 @@ plt.ylabel('Returns')
 plt.title('DQN on {}'.format(env_name))
 plt.show()'''
 
-with open('DQN_CartPole1.pkl', 'wb') as TrainedModel:
+with open('DQN_CartPole0.pkl', 'wb') as TrainedModel:
     pickle.dump(agent, TrainedModel)
 
 for _ in range(10000):
