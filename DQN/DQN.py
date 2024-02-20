@@ -125,9 +125,6 @@ return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes,
 
 #print(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
 
-
-
-
 '''episodes_list = list(range(len(return_list)))
 plt.plot(episodes_list, return_list)
 plt.xlabel('Episodes')
