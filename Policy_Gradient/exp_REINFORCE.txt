@@ -1,0 +1,18 @@
+组成部分：
+1）policy net
+2）agent
+3）训练步骤
+
+1）policy net：简单的全连接网络即可
+
+2）agent：
+REINFORCCE的agent包含 初始化, take_action, update三个对象；
+
+初始化申明使用的策略网络，优化器，gamma值和device
+
+take_action部分输入一个状态，输出最大概率的动作
+
+update部分输入一个transition_dict，其中包含一些reward，state，action
+从后往前依次根据这些数据计算出对应的损失函数，损失函数具体计算方法见代码
+
+训练步骤：

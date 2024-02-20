@@ -95,7 +95,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 1000
+num_episodes = 100
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -139,10 +139,15 @@ plt.ylabel('Returns')
 plt.title('DQN on {}'.format(env_name))
 plt.show()'''
 
-with open('DQN_CartPole0.pkl', 'wb') as TrainedModel:
-    pickle.dump(agent, TrainedModel)
+'''with open('DQN_CartPole0.pkl', 'wb') as TrainedModel:
+    pickle.dump(agent, TrainedModel)'''
 
+f = open('/home/erhalight/Documents/bs/DQN/DQN_CartPole0.pkl','wb')
+pickle.dump(agent,f)
+f.close()
+
+'''env.reset()
 for _ in range(10000):
     env.render()
     env.step(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
-env.close()
+env.close()'''

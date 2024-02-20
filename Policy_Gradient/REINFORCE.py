@@ -55,8 +55,8 @@ learning_rate = 1e-3
 num_episodes = 100
 hidden_dim = 128
 gamma = 0.98
-#device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-device = "cpu"
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+#device = "cpu"
 
 env_name = "Acrobot-v1"
 env = gym.make(env_name)
@@ -98,12 +98,13 @@ episodes_list = list(range(len(return_list)))
 
 '''smoothen for better image'''
 mv_return = rl_utils.moving_average(return_list, 9)
-'''plt.plot(episodes_list, mv_return)
+plt.plot(episodes_list, mv_return)
 plt.xlabel('Episodes')
 plt.ylabel('Returns')
 plt.title('REINFORCE on {}'. format(env_name))
-plt.show()'''
+plt.show()
 
+'''
 env.reset()
 for _ in range(10000):
     transition_dict = {'states': [], 'actions': [], 'next_states': [],
@@ -122,3 +123,4 @@ for _ in range(10000):
         env.render()
         env.step(agent.policy_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
 env.close()
+'''
