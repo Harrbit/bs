@@ -1,35 +1,8 @@
-import pickle
-import random
-import gym
 import numpy as np
-import collections
-from tqdm import tqdm
 import torch
 import torch.nn.functional as F
-import matplotlib.pyplot as plt
-import rl_utils
-from torchinfo import summary
-
-#！！！一定要用gym0.23.0，别的版本会有各种各样的问题（不知道为什么）
-class ReplayBuffer:
-    ''' 经验回放池 '''
-    def __init__(self, capacity):
-        self.buffer = collections.deque(maxlen=capacity)  # 队列,先进先出
-
-    def add(self, state, action, reward, next_state, done):  # 将数据加入buffer
-        self.buffer.append((state, action, reward, next_state, done))
-
-    def sample(self, batch_size):  # 从buffer中采样数据,数量为batch_size
-        transitions = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = zip(*transitions)
-        return np.array(state), action, reward, np.array(next_state), done
-
-    def size(self):  # 目前buffer中数据的数量
-        return len(self.buffer)
-
 
 class Qnet(torch.nn.Module):
-    ''' 只有一层隐藏层的Q网络 '''
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(Qnet, self).__init__()
         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
@@ -41,7 +14,6 @@ class Qnet(torch.nn.Module):
 
 
 class DQN:
-    ''' DQN算法 '''
     def __init__(self, state_dim, hidden_dim, action_dim, learning_rate, gamma,
                  epsilon, target_update, device):
         self.action_dim = action_dim
@@ -92,62 +64,3 @@ class DQN:
             self.target_q_net.load_state_dict(
                 self.q_net.state_dict())  # 更新目标网络
         self.count += 1
-
-
-lr = 2e-3
-num_episodes = 100
-hidden_dim = 128
-gamma = 0.98
-epsilon = 0.01
-target_update = 10
-buffer_size = 10000
-minimal_size = 500
-batch_size = 64
-device = torch.device("cuda")
-env_name = 'CartPole-v0'
-
-env = gym.make(env_name)
-env.reset()
-random.seed(0)
-np.random.seed(0)
-env.seed(0)
-torch.manual_seed(0)
-
-replay_buffer = ReplayBuffer(buffer_size)
-state_dim = env.observation_space.shape[0]
-action_dim = env.action_space.n
-agent = DQN(state_dim, hidden_dim, action_dim, lr, gamma, epsilon,
-            target_update, device)
-summary(agent.q_net)
-
-return_list = rl_utils.train_off_policy_agent(env, agent, num_episodes, 
-                                              replay_buffer, minimal_size, batch_size)
-
-#print(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
-
-'''episodes_list = list(range(len(return_list)))
-plt.plot(episodes_list, return_list)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('DQN on {}'.format(env_name))
-plt.show()
-
-mv_return = rl_utils.moving_average(return_list, 9)
-plt.plot(episodes_list, mv_return)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('DQN on {}'.format(env_name))
-plt.show()'''
-
-'''with open('DQN_CartPole0.pkl', 'wb') as TrainedModel:
-    pickle.dump(agent, TrainedModel)'''
-
-f = open('/home/erhalight/Documents/bs/DQN/DQN_CartPole0.pkl','wb')
-pickle.dump(agent,f)
-f.close()
-
-'''env.reset()
-for _ in range(10000):
-    env.render()
-    env.step(agent.q_net(torch.tensor(env.state, dtype=torch.float).to(device)).argmax().item())
-env.close()'''
