@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import rl_utils
 from torchinfo import summary
 
-
+#！！！一定要用gym0.23.0，别的版本会有各种各样的问题（不知道为什么）
 class ReplayBuffer:
     ''' 经验回放池 '''
     def __init__(self, capacity):
