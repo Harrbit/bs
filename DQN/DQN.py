@@ -95,7 +95,7 @@ class DQN:
 
 
 lr = 2e-3
-num_episodes = 100
+num_episodes = 1000
 hidden_dim = 128
 gamma = 0.98
 epsilon = 0.01
@@ -103,7 +103,7 @@ target_update = 10
 buffer_size = 10000
 minimal_size = 500
 batch_size = 64
-device = torch.device("cpu")
+device = torch.device("cuda")
 env_name = 'CartPole-v0'
 
 env = gym.make(env_name)
