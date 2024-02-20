@@ -37,7 +37,7 @@ class REINFORCE:
         reward_list = transition_dict['rewards']
         state_list = transition_dict['states']
         action_list = transition_dict['actions']
-
+        # 根据采样值计算梯度
         G = 0
         self.optimizer.zero_grad()
         for i in reversed(range(len(reward_list))):
@@ -45,9 +45,11 @@ class REINFORCE:
             state = torch.tensor([state_list[i]], dtype=torch.float).to(self.device)
             action = torch.tensor([action_list[i]]).view(-1, 1).to(self.device)
             log_prob = torch.log(self.policy_net(state).gather(1, action))
+            
             G = self.gamma * G + reward
             loss = -log_prob * G
             loss.backward()
+
         self.optimizer.step()
 
 
@@ -77,7 +79,7 @@ for i in range(10):
                                'rewards': [], 'dones': []}
             state = env.reset()
             done = False
-            while not done:
+            while not done:  # 根据当前策略采样众多轨迹
                 action = agent.take_action(state)
                 next_state, reward, done, _ = env.step(action)
                 transition_dict['states'].append(state)

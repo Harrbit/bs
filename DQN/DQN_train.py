@@ -29,7 +29,6 @@ class ReplayBuffer:
 
 
 class Qnet(torch.nn.Module):
-    ''' 只有一层隐藏层的Q网络 '''
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(Qnet, self).__init__()
         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
