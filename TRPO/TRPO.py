@@ -1,3 +1,12 @@
+import torch
+import numpy as np
+import gym
+import matplotlib.pyplot as plt
+import torch.nn.functional as F
+import rl_utils
+import copy
+
+
 def compute_advantage(gamma, lmbda, td_delta):
     td_delta = td_delta.detach().numpy()
     advantage_list = []
@@ -7,13 +16,8 @@ def compute_advantage(gamma, lmbda, td_delta):
         advantage_list.append(advantage)
     advantage_list.reverse()
     return torch.tensor(advantage_list, dtype=torch.float)
-import torch
-import numpy as np
-import gym
-import matplotlib.pyplot as plt
-import torch.nn.functional as F
-import rl_utils
-import copy
+
+
 class PolicyNet(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(PolicyNet, self).__init__()
