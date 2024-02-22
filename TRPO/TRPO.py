@@ -8,17 +8,6 @@ import copy
 import pickle
 
 
-def compute_advantage(gamma, lmbda, td_delta):
-    td_delta = td_delta.detach().numpy()
-    advantage_list = []
-    advantage = 0.0
-    for delta in td_delta[::-1]:
-        advantage = gamma * lmbda * advantage + delta
-        advantage_list.append(advantage)
-    advantage_list.reverse()
-    return torch.tensor(advantage_list, dtype=torch.float)
-
-
 class PolicyNet(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(PolicyNet, self).__init__()
@@ -150,6 +139,16 @@ class TRPO:
         torch.nn.utils.convert_parameters.vector_to_parameters(
             new_para, self.actor.parameters())  # 用线性搜索后的参数更新策略
 
+    def compute_advantage(self, gamma, lmbda, td_delta):
+        td_delta = td_delta.detach().numpy()
+        advantage_list = []
+        advantage = 0.0
+        for delta in td_delta[::-1]:
+            advantage = gamma * lmbda * advantage + delta
+            advantage_list.append(advantage)
+        advantage_list.reverse()
+        return torch.tensor(advantage_list, dtype=torch.float)
+
     def update(self, transition_dict):
         states = torch.tensor(transition_dict['states'],
                               dtype=torch.float).to(self.device)
@@ -164,7 +163,7 @@ class TRPO:
         td_target = rewards + self.gamma * self.critic(next_states) * (1 -
                                                                        dones)
         td_delta = td_target - self.critic(states)
-        advantage = compute_advantage(self.gamma, self.lmbda,
+        advantage = self.compute_advantage(self.gamma, self.lmbda,
                                       td_delta.cpu()).to(self.device)
         old_log_probs = torch.log(self.actor(states).gather(1,
                                                             actions)).detach()
