@@ -160,6 +160,7 @@ class TRPO:
                                    dtype=torch.float).to(self.device)
         dones = torch.tensor(transition_dict['dones'],
                              dtype=torch.float).view(-1, 1).to(self.device)
+        
         td_target = rewards + self.gamma * self.critic(next_states) * (1 -
                                                                        dones)
         td_delta = td_target - self.critic(states)
@@ -171,9 +172,10 @@ class TRPO:
             self.actor(states).detach())
         critic_loss = torch.mean(
             F.mse_loss(self.critic(states), td_target.detach()))
+        
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
-        self.critic_optimizer.step()  # 更新价值函数
+        self.critic_optimizer.step()  # 更新价值函数 
         # 更新策略函数
         self.policy_learn(states, actions, old_action_dists, old_log_probs,
                           advantage)
