@@ -189,7 +189,7 @@ alpha = 0.5
 # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 device = torch.device("cpu")
 
-env_name = 'CartPole-v1'
+env_name = 'LunarLander-v2'
 env = gym.make(env_name)
 env.seed(0)
 torch.manual_seed(0)

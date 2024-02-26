@@ -79,7 +79,7 @@ for i in range(10):
                                'rewards': [], 'dones': []}
             state = env.reset()
             done = False
-            while not done:  # 根据当前策略采样众多轨迹
+            while not done:  # 根据当前策略采样轨迹
                 action = agent.take_action(state)
                 next_state, reward, done, _ = env.step(action)
                 transition_dict['states'].append(state)

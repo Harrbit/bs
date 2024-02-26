@@ -27,7 +27,7 @@ qpos = np.array([0.0, 0.0, 0.454, 1.0, 0.0, 0.0, 0.0,
                                0.0, -0.87, 1.78])
 
 old_state = sim.get_state()
-old_state.qvel[15] += 1
+old_state.qvel[3] += 0.2
 print(len(old_state.qpos))
 new_state = mujoco_py.MjSimState(old_state.time, old_state.qpos, old_state.qvel, old_state.act, old_state.udd_state)
 sim.set_state(new_state)
