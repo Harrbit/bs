@@ -7,12 +7,13 @@ from TRPO_use_dependency import TRPO
 from TRPO_use_dependency import PolicyNet
 from TRPO_use_dependency import ValueNet
 
-env_name = 'LunarLander-v2'
+env_name = 'CartPole-v1'
 env = gym.make(env_name)
 device = torch.device("cuda")
 
 # file = open('DQN_CartPole0.pkl', 'rb')
-file = open('/home/erhalight/Documents/bs/TRPO/TRPO_CartPole1.pkl', 'rb')
+file_path = '/home/erhalight/Documents/bs/TRPO/TRPO_' + env_name + '.pkl'
+file = open(file_path, 'rb')
 agent = pickle.load(file)
 file.close()
 
