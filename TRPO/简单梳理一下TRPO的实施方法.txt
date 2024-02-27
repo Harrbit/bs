@@ -1,0 +1,23 @@
+1.采样出一条路线
+
+2.更新价值函数：计算出td目标，价值函数的损失函数就是td目标和函数就目前状态的返回值的mse，
+把优化器zerograd，将损失反向传播，优化器优化
+
+3.更新策略函数：计算出当前动作的分布，当前当前工作概率的log，
+优势函数（每个时间步的优势的折扣积累），
+计算策略目标（有个式子，这里不太好打，论文里有，抄一段代码：）
+
+log_probs = torch.log(actor(states).gather(1, actions))
+ratio = torch.exp(log_probs - old_log_probs)
+return torch.mean(ratio * advantage)
+
+从策略目标和actor的parameter得到一个梯度（什么玩意）
+从这个梯度得到一个共轭梯度
+用共轭梯度法得到一个下降的方向，这个过程中会用到海森矩阵（很神奇）
+再把下降方向，当前状态和旧动作分布丢进海森矩阵vectorproduct里面，得到Hd
+Hd和kl限制得到最大参数
+对最大参数线性搜索得到新的参数
+直接更新
+
+（其实完全不懂）
+
