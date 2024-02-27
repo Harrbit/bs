@@ -38,8 +38,8 @@ def train_on_policy_agent(env, agent, num_episodes):
                 state = env.reset()
                 done = False
                 while not done:
-                    action = agent.take_action(state) # 正常环境用这个
-
+                    action = agent.take_action(state).data.cpu().numpy()
+                    # action = agent.take_action(state) # 正常环境用这个
                     # action_temp = agent.take_action(state)
                     # action = action_temp.view(-1).tolist()
                     # action = Box(low = -0.4, high = 0.4, shape = (17,), dtype = np.float32)
