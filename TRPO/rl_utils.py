@@ -10,7 +10,7 @@ class ReplayBuffer:
         self.buffer = collections.deque(maxlen=capacity) 
 
     def add(self, state, action, reward, next_state, done): 
-        self.buffer.append((state, action, reward, next_state, done)) 
+        self.buffer.append((state, action, reward, next_state, done))
 
     def sample(self, batch_size): 
         transitions = random.sample(self.buffer, batch_size)
@@ -45,8 +45,9 @@ def train_on_policy_agent(env, agent, num_episodes):
                     # action = Box(low = -0.4, high = 0.4, shape = (17,), dtype = np.float32)
                     # for i in range(agent.action_dim):
                     #     action[i] = action_temp[i].tolist()
-                    
-                    next_state, reward, done, _ = env.step(action)
+
+                    next_state, reward, done, _ = env.step(action)  # continuous
+                    # next_state, reward, done, _ = env.step(action)  # regular
                     transition_dict['states'].append(state)
                     transition_dict['actions'].append(action)
                     transition_dict['next_states'].append(next_state)
