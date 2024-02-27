@@ -38,12 +38,14 @@ def train_on_policy_agent(env, agent, num_episodes):
                 state = env.reset()
                 done = False
                 while not done:
-                    # action = agent.take_action(state) # 正常环境用这个
-                    action_temp = agent.take_action(state)
-                    action = action_temp.view(-1).tolist()
+                    action = agent.take_action(state) # 正常环境用这个
+
+                    # action_temp = agent.take_action(state)
+                    # action = action_temp.view(-1).tolist()
                     # action = Box(low = -0.4, high = 0.4, shape = (17,), dtype = np.float32)
                     # for i in range(agent.action_dim):
                     #     action[i] = action_temp[i].tolist()
+                    
                     next_state, reward, done, _ = env.step(action)
                     transition_dict['states'].append(state)
                     transition_dict['actions'].append(action)
