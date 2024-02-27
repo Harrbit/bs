@@ -15,7 +15,7 @@ class ReplayBuffer:
     def sample(self, batch_size): 
         transitions = random.sample(self.buffer, batch_size)
         state, action, reward, next_state, done = zip(*transitions)
-        return np.array(state), action, reward, np.array(next_state), done 
+        return np.array(state), action, reward, np.array(next_state), done
 
     def size(self): 
         return len(self.buffer)
@@ -38,14 +38,8 @@ def train_on_policy_agent(env, agent, num_episodes):
                 state = env.reset()
                 done = False
                 while not done:
-                    action = agent.take_action(state).data.cpu().numpy()
-                    # action = agent.take_action(state) # 正常环境用这个
-                    # action_temp = agent.take_action(state)
-                    # action = action_temp.view(-1).tolist()
-                    # action = Box(low = -0.4, high = 0.4, shape = (17,), dtype = np.float32)
-                    # for i in range(agent.action_dim):
-                    #     action[i] = action_temp[i].tolist()
-
+                    action = agent.take_action(state)[0].squeeze(dim=0).data.cpu().numpy()
+                    # action = agent.take_action(state) # classic环境用这个
                     next_state, reward, done, _ = env.step(action)  # continuous
                     # next_state, reward, done, _ = env.step(action)  # regular
                     transition_dict['states'].append(state)
