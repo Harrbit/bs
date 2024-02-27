@@ -9,7 +9,7 @@ from TRPO_use_dependency import ValueNet
 
 env_name = 'LunarLander-v2'
 env = gym.make(env_name)
-device = torch.device("cpu")
+device = torch.device("cuda")
 
 # file = open('DQN_CartPole0.pkl', 'rb')
 file = open('/home/erhalight/Documents/bs/TRPO/TRPO_CartPole1.pkl', 'rb')

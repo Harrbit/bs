@@ -34,11 +34,12 @@ class TRPO:
     """ TRPO算法 """
     def __init__(self, hidden_dim, state_space, action_space, lmbda,
                  kl_constraint, alpha, critic_lr, gamma, device):
-        state_dim = state_space.shape[0]
-        action_dim = action_space.n
+        self.state_dim = state_space.shape[0]
+        # action_dim = action_space.n
+        self.action_dim = len(action_space.sample())
         # 策略网络参数不需要优化器更新
-        self.actor = PolicyNet(state_dim, hidden_dim, action_dim).to(device)
-        self.critic = ValueNet(state_dim, hidden_dim).to(device)
+        self.actor = PolicyNet(self.state_dim, hidden_dim, self.action_dim).to(device)
+        self.critic = ValueNet(self.state_dim, hidden_dim).to(device)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(),
                                                  lr=critic_lr)
         self.gamma = gamma
@@ -50,9 +51,11 @@ class TRPO:
     def take_action(self, state):
         state = torch.tensor([state], dtype=torch.float).to(self.device)
         probs = self.actor(state)
-        action_dist = torch.distributions.Categorical(probs)
-        action = action_dist.sample()
-        return action.item()
+
+        # action_dist = torch.distributions.Categorical(probs) # humanoid 不需要这一行，改环境的时候记得删
+        # action = action_dist.sample() # 同上
+        # return action.item() # 同上
+        return probs *0.8  - 0.4
 
     def hessian_matrix_vector_product(self, states, old_action_dists, vector):
         # 计算黑塞矩阵和一个向量的乘积
@@ -166,8 +169,8 @@ class TRPO:
         td_delta = td_target - self.critic(states)
         advantage = self.compute_advantage(self.gamma, self.lmbda,
                                       td_delta.cpu()).to(self.device)
-        old_log_probs = torch.log(self.actor(states).gather(1,
-                                                            actions)).detach()
+        # old_log_probs = torch.log(self.actor(states).gather(1, actions)).detach()
+        old_log_probs = torch.log(self.actor(states)).detach()
         old_action_dists = torch.distributions.Categorical(
             self.actor(states).detach())
         critic_loss = torch.mean(
@@ -179,7 +182,7 @@ class TRPO:
         # 更新策略函数
         self.policy_learn(states, actions, old_action_dists, old_log_probs,
                           advantage)
-num_episodes = 2000
+num_episodes = 800
 hidden_dim = 128
 gamma = 0.98
 lmbda = 0.95
@@ -189,7 +192,8 @@ alpha = 0.5
 # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 device = torch.device("cpu")
 
-env_name = 'LunarLander-v2'
+# env_name = 'LunarLander-v2'
+env_name = 'Humanoid-v2'
 env = gym.make(env_name)
 env.seed(0)
 torch.manual_seed(0)
