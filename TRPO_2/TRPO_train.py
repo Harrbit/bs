@@ -1,3 +1,3 @@
 import torch
 import TRPO_dependency
-import nummpy as np
+import numpy as np
