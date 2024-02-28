@@ -44,6 +44,7 @@ class REINFORCE:
             reward = reward_list[i]
             state = torch.tensor([state_list[i]], dtype=torch.float).to(self.device)
             action = torch.tensor([action_list[i]]).view(-1, 1).to(self.device)
+            print(torch.log(self.policy_net(state)))
             log_prob = torch.log(self.policy_net(state).gather(1, action))
             
             G = self.gamma * G + reward
