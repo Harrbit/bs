@@ -163,6 +163,11 @@ class TRPO:
         td_delta = td_target - self.critic(states)
         advantage = self.compute_advantage(self.gamma, self.lmbda,
                                       td_delta.cpu()).to(self.device)
+        
+        print(torch.log(self.actor(states).gather(1, actions)).detach())
+        print(torch.log(self.actor(states).gather(1, actions)))
+        print(torch.log(self.actor(states)))
+
         old_log_probs = torch.log(self.actor(states).gather(1,
                                                             actions)).detach()
         old_action_dists = torch.distributions.Categorical(

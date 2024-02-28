@@ -38,8 +38,8 @@ def train_on_policy_agent(env, agent, num_episodes):
                 state = env.reset()
                 done = False
                 while not done:
-                    action = agent.take_action(state)[0].squeeze(dim=0).data.cpu().numpy()
-                    # action = agent.take_action(state) # classic环境用这个
+                    # action = agent.take_action(state)[0].squeeze(dim=0).data.cpu().numpy()
+                    action = agent.take_action(state) # classic环境用这个
                     next_state, reward, done, _ = env.step(action)  # continuous
                     # next_state, reward, done, _ = env.step(action)  # regular
                     transition_dict['states'].append(state)
