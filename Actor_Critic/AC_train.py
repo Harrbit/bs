@@ -51,7 +51,6 @@ class ActorCritic:
         return action.item()
 
     def update(self, transition_dict):
-        # regulating data
         states = torch.tensor(transition_dict['states'],
                               dtype=torch.float).to(self.device)
         actions = torch.tensor(transition_dict['actions']).view(-1, 1).to(
@@ -62,21 +61,21 @@ class ActorCritic:
                                    dtype=torch.float).to(self.device)
         dones = torch.tensor(transition_dict['dones'],
                              dtype=torch.float).view(-1, 1).to(self.device)
-        # pre-process for loss function
+
+        self.critic_optimizer.zero_grad()
+        self.actor_optimizer.zero_grad()
+
         td_target = rewards + self.gamma * self.critic(next_states) * (1 - dones)
         td_delta = td_target - self.critic(states)
-        log_probs = torch.log(self.actor(states).gather(1, actions))
-        # loss funciton
-        actor_loss = torch.mean(-log_probs * td_delta.detach())
-        critic_loss = torch.mean(
-            F.mse_loss(self.critic(states), td_target.detach()))
-        # calculate grad. and optimize net
-        self.actor_optimizer.zero_grad()
-        self.critic_optimizer.zero_grad()
-        actor_loss.backward()
+        critic_loss = torch.mean(F.mse_loss(self.critic(states), td_target.detach()))
         critic_loss.backward()
-        self.actor_optimizer.step()
         self.critic_optimizer.step()
+        
+        log_probs = torch.log(self.actor(states).gather(1, actions))
+        actor_loss = torch.mean(-log_probs * td_delta.detach())
+        actor_loss.backward()
+        self.actor_optimizer.step()
+
 
 
 actor_lr = 1e-3
