@@ -7,7 +7,7 @@ from TRPO_use_dependency import TRPO
 from TRPO_use_dependency import PolicyNet
 from TRPO_use_dependency import ValueNet
 
-env_name = 'CartPole-v1'
+env_name = 'LunarLander-v2'
 env = gym.make(env_name)
 device = torch.device("cuda")
 
