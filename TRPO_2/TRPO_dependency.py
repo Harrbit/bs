@@ -42,4 +42,4 @@ class TRPO:
         return action
     
     def update(self, trasition_dict):
-        
+        state = trasition_dict['state']
