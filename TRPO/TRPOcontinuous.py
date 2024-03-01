@@ -63,7 +63,7 @@ class TRPOContinuous:
         action_dist = torch.distributions.Normal(mu, std)
         action = action_dist.sample()
         # return [action.item()]
-        return [action.tolist()]
+        return action
 
     def hessian_matrix_vector_product(self,
                                       states,
