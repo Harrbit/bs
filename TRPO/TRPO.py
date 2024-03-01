@@ -8,15 +8,28 @@ import rl_utils
 import copy
 
 
+# class PolicyNet(torch.nn.Module):
+#     def __init__(self, state_dim, hidden_dim, action_dim):
+#         super(PolicyNet, self).__init__()
+#         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
+#         self.fc2 = torch.nn.Linear(hidden_dim, action_dim)
+
+#     def forward(self, x):
+#         x = F.relu(self.fc1(x))
+#         return F.softmax(self.fc2(x), dim=1)
+    
+
 class PolicyNet(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(PolicyNet, self).__init__()
         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
-        self.fc2 = torch.nn.Linear(hidden_dim, action_dim)
+        self.fc2 = torch.nn.Linear(hidden_dim, hidden_dim)
+        self.fc3 = torch.nn.Linear(hidden_dim, action_dim)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        return F.softmax(self.fc2(x), dim=1)
+        x = F.relu(self.fc2(x))
+        return F.softmax(self.fc3(x), dim=1)
 
 
 class ValueNet(torch.nn.Module):
@@ -178,7 +191,7 @@ class TRPO:
         self.policy_learn(states, actions, old_action_dists, old_log_probs,
                           advantage)
 num_episodes = 1500
-hidden_dim = 128
+hidden_dim = 1024
 gamma = 0.98
 lmbda = 0.95
 critic_lr = 1e-2
@@ -186,7 +199,7 @@ kl_constraint = 0.0005
 alpha = 0.5
 device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
     "cpu")
-
+# device = ("cpu")
 env_name = 'LunarLander-v2'
 env = gym.make(env_name)
 env.seed(0)
@@ -195,19 +208,19 @@ agent = TRPO(hidden_dim, env.observation_space, env.action_space, lmbda,
              kl_constraint, alpha, critic_lr, gamma, device)
 return_list = rl_utils.train_on_policy_agent(env, agent, num_episodes)
 
-# episodes_list = list(range(len(return_list)))
+episodes_list = list(range(len(return_list)))
 # plt.plot(episodes_list, return_list)
 # plt.xlabel('Episodes')
 # plt.ylabel('Returns')
 # plt.title('TRPO on {}'.format(env_name))
 # plt.show()
 
-# mv_return = rl_utils.moving_average(return_list, 9)
-# plt.plot(episodes_list, mv_return)
-# plt.xlabel('Episodes')
-# plt.ylabel('Returns')
-# plt.title('TRPO on {}'.format(env_name))
-# plt.show()
+mv_return = rl_utils.moving_average(return_list, 9)
+plt.plot(episodes_list, mv_return)
+plt.xlabel('Episodes')
+plt.ylabel('Returns')
+plt.title('TRPO on {}'.format(env_name))
+plt.show()
 
 
 file_path = '/home/erhalight/Documents/bs/TRPO/TRPO_' + env_name + '.pkl'

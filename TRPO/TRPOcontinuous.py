@@ -1,4 +1,12 @@
-import pickle
+def compute_advantage(gamma, lmbda, td_delta):
+    td_delta = td_delta.detach().numpy()
+    advantage_list = []
+    advantage = 0.0
+    for delta in td_delta[::-1]:
+        advantage = gamma * lmbda * advantage + delta
+        advantage_list.append(advantage)
+    advantage_list.reverse()
+    return torch.tensor(advantage_list, dtype=torch.float)
 import torch
 import numpy as np
 import gym
@@ -6,8 +14,7 @@ import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import rl_utils
 import copy
-from gym.spaces.box import Box
-
+import pickle
 
 class ValueNet(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim):
@@ -18,34 +25,23 @@ class ValueNet(torch.nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         return self.fc2(x)
-
-
-# class PolicyNetContinuous(torch.nn.Module):
-#     def __init__(self, state_dim, hidden_dim, action_dim):
-#         super(PolicyNetContinuous, self).__init__()
-#         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
-#         self.fc_mu = torch.nn.Linear(hidden_dim, action_dim)
-#         self.fc_std = torch.nn.Linear(hidden_dim, action_dim)
-
-#     def forward(self, x):
-#         x = F.relu(self.fc1(x))
-#         mu = 2.0 * torch.tanh(self.fc_mu(x))
-#         std = F.softplus(self.fc_std(x))
-#         return mu, std  # 高斯分布的均值和标准差
-
-
+    
 class PolicyNetContinuous(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(PolicyNetContinuous, self).__init__()
         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
-        self.fc2 = torch.nn.Linear(hidden_dim, action_dim)
+        self.fc_mu = torch.nn.Linear(hidden_dim, action_dim)
+        self.fc_std = torch.nn.Linear(hidden_dim, action_dim)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
-        return self.fc2(x)
+        mu = 2.0 * torch.tanh(self.fc_mu(x))
+        std = F.softplus(self.fc_std(x))
+        return mu, std  # 高斯分布的均值和标准差
 
 
 class TRPOContinuous:
+    """ 处理连续动作的TRPO算法 """
     def __init__(self, hidden_dim, state_space, action_space, lmbda,
                  kl_constraint, alpha, critic_lr, gamma, device):
         state_dim = state_space.shape[0]
@@ -61,29 +57,13 @@ class TRPOContinuous:
         self.alpha = alpha
         self.device = device
 
-    # def take_action(self, state):
-    #     state = torch.tensor([state], dtype=torch.float).to(self.device)
-    #     mu, std = self.actor(state)
-    #     action_dist = torch.distributions.Normal(mu, std)
-    #     action = action_dist.sample()
-    #     # return action.tolist()
-    #     return action
-    
-
     def take_action(self, state):
         state = torch.tensor([state], dtype=torch.float).to(self.device)
-        return self.actor(state)
-
-
-    def compute_advantage(self, gamma, lmbda, td_delta):
-        td_delta = td_delta.detach().numpy()
-        advantage_list = []
-        advantage = 0.0
-        for delta in td_delta[::-1]:
-            advantage = gamma * lmbda * advantage + delta
-            advantage_list.append(advantage)
-        advantage_list.reverse()
-        return torch.tensor(advantage_list, dtype=torch.float)
+        mu, std = self.actor(state)
+        action_dist = torch.distributions.Normal(mu, std)
+        action = action_dist.sample()
+        # return [action.item()]
+        return [action.tolist()]
 
     def hessian_matrix_vector_product(self,
                                       states,
@@ -185,11 +165,11 @@ class TRPOContinuous:
                                    dtype=torch.float).to(self.device)
         dones = torch.tensor(transition_dict['dones'],
                              dtype=torch.float).view(-1, 1).to(self.device)
-        # rewards = (rewards + 8.0) / 8.0  # 对奖励进行修改,方便训练
+        rewards = (rewards + 8.0) / 8.0  # 对奖励进行修改,方便训练
         td_target = rewards + self.gamma * self.critic(next_states) * (1 -
                                                                        dones)
         td_delta = td_target - self.critic(states)
-        advantage = self.compute_advantage(self.gamma, self.lmbda,
+        advantage = compute_advantage(self.gamma, self.lmbda,
                                       td_delta.cpu()).to(self.device)
         mu, std = self.actor(states)
         old_action_dists = torch.distributions.Normal(mu.detach(),
@@ -202,8 +182,6 @@ class TRPOContinuous:
         self.critic_optimizer.step()
         self.policy_learn(states, actions, old_action_dists, old_log_probs,
                           advantage)
-        
-
 num_episodes = 2000
 hidden_dim = 128
 gamma = 0.9
@@ -211,11 +189,10 @@ lmbda = 0.9
 critic_lr = 1e-2
 kl_constraint = 0.00005
 alpha = 0.5
-device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
-    "cpu")
-
-# env_name = 'Pendulum-v1'
-env_name = 'Humanoid-v2'
+# device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
+    # "cpu")
+device = torch.device("cpu")
+env_name = 'Humanoid-v3'
 env = gym.make(env_name)
 env.seed(0)
 torch.manual_seed(0)
@@ -223,25 +200,23 @@ agent = TRPOContinuous(hidden_dim, env.observation_space, env.action_space,
                        lmbda, kl_constraint, alpha, critic_lr, gamma, device)
 return_list = rl_utils.train_on_policy_agent(env, agent, num_episodes)
 
-file_path = '/home/erhalight/Documents/bs/TRPO/TRPOcontinuous_' + env_name + '.pkl'
+episodes_list = list(range(len(return_list)))
+plt.plot(episodes_list, return_list)
+plt.xlabel('Episodes')
+plt.ylabel('Returns')
+plt.title('TRPO on {}'.format(env_name))
+plt.show()
+
+mv_return = rl_utils.moving_average(return_list, 9)
+plt.plot(episodes_list, mv_return)
+plt.xlabel('Episodes')
+plt.ylabel('Returns')
+plt.title('TRPO on {}'.format(env_name))
+plt.show()
+
+file_path = '/home/erhalight/Documents/bs/TRPO/TRPO_' + env_name + '.pkl'
+
 f = open(file_path,'wb')
 # f = open('DQN_CartPole0.pkl','wb')
 pickle.dump(agent,f)
 f.close()
-
-
-# print(env.action_space.shape)
-
-# episodes_list = list(range(len(return_list)))
-# plt.plot(episodes_list, return_list)
-# plt.xlabel('Episodes')
-# plt.ylabel('Returns')
-# plt.title('TRPO on {}'.format(env_name))
-# plt.show()
-
-# mv_return = rl_utils.moving_average(return_list, 9)
-# plt.plot(episodes_list, mv_return)
-# plt.xlabel('Episodes')
-# plt.ylabel('Returns')
-# plt.title('TRPO on {}'.format(env_name))
-# plt.show()
