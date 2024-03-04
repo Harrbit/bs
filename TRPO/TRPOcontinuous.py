@@ -190,8 +190,8 @@ class TRPOContinuous:
                           advantage)
 
 
-num_episodes = 20000
-hidden_dim = 128
+num_episodes = 200000
+hidden_dim = 256
 gamma = 0.9
 lmbda = 0.9
 critic_lr = 1e-2
