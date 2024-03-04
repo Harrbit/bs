@@ -7,14 +7,17 @@ def compute_advantage(gamma, lmbda, td_delta):
         advantage_list.append(advantage)
     advantage_list.reverse()
     return torch.tensor(advantage_list, dtype=torch.float)
+
+
 import torch
 import numpy as np
 import gym
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import rl_utils
 import copy
 import pickle
+
 
 class ValueNet(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim):
@@ -25,7 +28,8 @@ class ValueNet(torch.nn.Module):
     def forward(self, x):
         x = F.relu(self.fc1(x))
         return self.fc2(x)
-    
+
+
 class PolicyNetContinuous(torch.nn.Module):
     def __init__(self, state_dim, hidden_dim, action_dim):
         super(PolicyNetContinuous, self).__init__()
@@ -182,6 +186,8 @@ class TRPOContinuous:
         self.critic_optimizer.step()
         self.policy_learn(states, actions, old_action_dists, old_log_probs,
                           advantage)
+
+
 num_episodes = 2000
 hidden_dim = 128
 gamma = 0.9
@@ -189,8 +195,7 @@ lmbda = 0.9
 critic_lr = 1e-2
 kl_constraint = 0.00005
 alpha = 0.5
-# device = torch.device("cuda") if torch.cuda.is_available() else torch.device(
-    # "cpu")
+# device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 device = torch.device("cpu")
 env_name = 'Humanoid-v3'
 env = gym.make(env_name)
@@ -200,23 +205,22 @@ agent = TRPOContinuous(hidden_dim, env.observation_space, env.action_space,
                        lmbda, kl_constraint, alpha, critic_lr, gamma, device)
 return_list = rl_utils.train_on_policy_agent(env, agent, num_episodes)
 
-episodes_list = list(range(len(return_list)))
-plt.plot(episodes_list, return_list)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('TRPO on {}'.format(env_name))
-plt.show()
+# episodes_list = list(range(len(return_list)))
+# plt.plot(episodes_list, return_list)
+# plt.xlabel('Episodes')
+# plt.ylabel('Returns')
+# plt.title('TRPO on {}'.format(env_name))
+# plt.show()
 
-mv_return = rl_utils.moving_average(return_list, 9)
-plt.plot(episodes_list, mv_return)
-plt.xlabel('Episodes')
-plt.ylabel('Returns')
-plt.title('TRPO on {}'.format(env_name))
-plt.show()
+# mv_return = rl_utils.moving_average(return_list, 9)
+# plt.plot(episodes_list, mv_return)
+# plt.xlabel('Episodes')
+# plt.ylabel('Returns')
+# plt.title('TRPO on {}'.format(env_name))
+# plt.show()
 
 file_path = '/home/erhalight/Documents/bs/TRPO/TRPO_' + env_name + '.pkl'
 
 f = open(file_path,'wb')
-# f = open('DQN_CartPole0.pkl','wb')
 pickle.dump(agent,f)
 f.close()
