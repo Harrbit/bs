@@ -12,7 +12,7 @@ def compute_advantage(gamma, lmbda, td_delta):
 import torch
 import numpy as np
 import gym
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 import torch.nn.functional as F
 import rl_utils
 import copy
@@ -65,7 +65,7 @@ class TRPOContinuous:
         state = torch.tensor([state], dtype=torch.float).to(self.device)
         mu, std = self.actor(state)
         action_dist = torch.distributions.Normal(mu, std)
-        action = action_dist.sample()
+        action = np.squeeze(action_dist.sample())
         # return [action.item()]
         return action
 
@@ -113,7 +113,8 @@ class TRPOContinuous:
                               actor):
         mu, std = actor(states)
         action_dists = torch.distributions.Normal(mu, std)
-        log_probs = action_dists.log_prob(actions)
+        trail_length_cso = len(states)  #
+        log_probs = action_dists.log_prob(actions.reshape(trail_length_cso,17))  #
         ratio = torch.exp(log_probs - old_log_probs)
         return torch.mean(ratio * advantage)
 
@@ -178,7 +179,8 @@ class TRPOContinuous:
         mu, std = self.actor(states)
         old_action_dists = torch.distributions.Normal(mu.detach(),
                                                       std.detach())
-        old_log_probs = old_action_dists.log_prob(actions)
+        trail_length = len(states)  #
+        old_log_probs = old_action_dists.log_prob(actions.reshape(trail_length,17))  #
         critic_loss = torch.mean(
             F.mse_loss(self.critic(states), td_target.detach()))
         self.critic_optimizer.zero_grad()
@@ -188,7 +190,7 @@ class TRPOContinuous:
                           advantage)
 
 
-num_episodes = 2000
+num_episodes = 20000
 hidden_dim = 128
 gamma = 0.9
 lmbda = 0.9
@@ -205,19 +207,19 @@ agent = TRPOContinuous(hidden_dim, env.observation_space, env.action_space,
                        lmbda, kl_constraint, alpha, critic_lr, gamma, device)
 return_list = rl_utils.train_on_policy_agent(env, agent, num_episodes)
 
-# episodes_list = list(range(len(return_list)))
+episodes_list = list(range(len(return_list)))
 # plt.plot(episodes_list, return_list)
 # plt.xlabel('Episodes')
 # plt.ylabel('Returns')
 # plt.title('TRPO on {}'.format(env_name))
 # plt.show()
 
-# mv_return = rl_utils.moving_average(return_list, 9)
-# plt.plot(episodes_list, mv_return)
-# plt.xlabel('Episodes')
-# plt.ylabel('Returns')
-# plt.title('TRPO on {}'.format(env_name))
-# plt.show()
+mv_return = rl_utils.moving_average(return_list, 9)
+plt.plot(episodes_list, mv_return)
+plt.xlabel('Episodes')
+plt.ylabel('Returns')
+plt.title('TRPO on {}'.format(env_name))
+plt.show()
 
 file_path = '/home/erhalight/Documents/bs/TRPO/TRPO_' + env_name + '.pkl'
 

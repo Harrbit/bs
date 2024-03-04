@@ -74,6 +74,7 @@ class TRPO:
     def update(self, transition_dict):
         print('error')
 
+
 def compute_advantage(gamma, lmbda, td_delta):
     td_delta = td_delta.detach().numpy()
     advantage_list = []
@@ -119,8 +120,9 @@ class TRPOContinuous:
         state = torch.tensor([state], dtype=torch.float).to(self.device)
         mu, std = self.actor(state)
         action_dist = torch.distributions.Normal(mu, std)
-        action = action_dist.sample()
-        return [action.item()]
+        action = np.squeeze(action_dist.sample())
+        # return [action.item()]
+        return action
 
     def hessian_matrix_vector_product(self,
                                       states,
@@ -166,7 +168,8 @@ class TRPOContinuous:
                               actor):
         mu, std = actor(states)
         action_dists = torch.distributions.Normal(mu, std)
-        log_probs = action_dists.log_prob(actions)
+        trail_length_cso = len(states)  #
+        log_probs = action_dists.log_prob(actions.reshape(trail_length_cso,17))  #
         ratio = torch.exp(log_probs - old_log_probs)
         return torch.mean(ratio * advantage)
 
@@ -231,7 +234,8 @@ class TRPOContinuous:
         mu, std = self.actor(states)
         old_action_dists = torch.distributions.Normal(mu.detach(),
                                                       std.detach())
-        old_log_probs = old_action_dists.log_prob(actions)
+        trail_length = len(states)  #
+        old_log_probs = old_action_dists.log_prob(actions.reshape(trail_length,17))  #
         critic_loss = torch.mean(
             F.mse_loss(self.critic(states), td_target.detach()))
         self.critic_optimizer.zero_grad()
