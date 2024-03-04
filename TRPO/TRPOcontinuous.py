@@ -17,6 +17,7 @@ import torch.nn.functional as F
 import rl_utils
 import copy
 import pickle
+import torch.nn as nn
 
 
 class ValueNet(torch.nn.Module):
@@ -30,15 +31,46 @@ class ValueNet(torch.nn.Module):
         return self.fc2(x)
 
 
+# class PolicyNetContinuous(torch.nn.Module):
+#     def __init__(self, state_dim, hidden_dim, action_dim):
+#         super(PolicyNetContinuous, self).__init__()
+
+#         self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
+#         self.fc2 = torch.nn.Linear(hidden_dim, hidden_dim)
+        
+#         self.fc_mu = torch.nn.Linear(hidden_dim, action_dim)
+#         self.fc_std = torch.nn.Linear(hidden_dim, action_dim)
+
+#     def forward(self, x):
+#         x = F.relu(self.fc1(x))
+#         x = F.relu(self.fc2(x))
+#         mu = 2.0 * torch.tanh(self.fc_mu(x))
+#         std = F.softplus(self.fc_std(x))
+#         return mu, std  # 高斯分布的均值和标准差
+
 class PolicyNetContinuous(torch.nn.Module):
-    def __init__(self, state_dim, hidden_dim, action_dim):
+    def __init__(self,state_dim, hidden_dim, action_dim):
         super(PolicyNetContinuous, self).__init__()
-        self.fc1 = torch.nn.Linear(state_dim, hidden_dim)
+        self.state_dim = state_dim
+        self.action_dim = action_dim
+        self.conv1 = nn.Conv1d(1, 32, 3, 1, 1)
+        self.conv2 = nn.Conv1d(32, 64, 3, 1, 1)
+        self.fc1 = nn.Linear(64 * state_dim, 1024)
+        self.fc2 = nn.Linear(1024, hidden_dim)
         self.fc_mu = torch.nn.Linear(hidden_dim, action_dim)
         self.fc_std = torch.nn.Linear(hidden_dim, action_dim)
 
-    def forward(self, x):
-        x = F.relu(self.fc1(x))
+
+    def forward(self,x):
+        x = x.view(-1, 1, self.state_dim)
+        x = self.conv1(x)
+        x = F.relu(x)
+        x = self.conv2(x)
+        x = F.relu(x)
+        x = x.view(-1, 64 * self.state_dim)
+        x = self.fc1(x)
+        x = F.relu(x)
+        x = self.fc2(x)
         mu = 2.0 * torch.tanh(self.fc_mu(x))
         std = F.softplus(self.fc_std(x))
         return mu, std  # 高斯分布的均值和标准差
@@ -190,7 +222,7 @@ class TRPOContinuous:
                           advantage)
 
 
-num_episodes = 200000
+num_episodes = 10000
 hidden_dim = 128
 gamma = 0.9
 lmbda = 0.9
@@ -198,7 +230,7 @@ critic_lr = 1e-2
 kl_constraint = 0.00005
 alpha = 0.5
 # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-device = torch.device("cpu")
+device = torch.device("cuda")
 env_name = 'Humanoid-v3'
 env = gym.make(env_name)
 env.seed(0)
